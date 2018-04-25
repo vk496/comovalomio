@@ -1,6 +1,16 @@
 #!/bin/bash
 set -e
 
+
+DEPS=( echo rm curl convert tesseract xmllint sed )
+
+for i in "${DEPS[@]}"; do
+	if ! hash $i 2>/dev/null; then
+		echo -e "$i not installed!"
+		exit 1
+	fi
+done
+
 touch md5.sum
 
 if [ $# -lt 3 ] || [ $# -gt 4 ]; then
