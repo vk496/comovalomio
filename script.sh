@@ -2,7 +2,7 @@
 set -e
 
 
-DEPS=( echo rm curl convert tesseract xmllint sed )
+DEPS=( echo rm curl convert tesseract xmllint sed tr )
 
 for i in "${DEPS[@]}"; do
 	if ! hash $i 2>/dev/null; then
@@ -15,8 +15,8 @@ touch md5.sum
 
 if [ $# -lt 3 ] || [ $# -gt 4 ]; then
   echo "Número de parámetros incorrecto. Ejemplo:"
-  echo "$0 X1234567X 500001 2015"
-  echo "$0 X1234567X 500001 2015 1"
+  echo "$0 X1234567X R500001 2015"
+  echo "$0 X1234567X R500001 2015 1"
   exit 1
 fi
 
@@ -49,7 +49,7 @@ captcha=$(curl --request GET \
   --output - | \
 convert \
   - \
-  -fuzz 30% \
+  -fuzz 20% \
   +opaque "#0828cb" \
   -fill black \
   -threshold 45% \
@@ -57,9 +57,9 @@ convert \
 tesseract \
   - \
   stdout \
-  -c tessedit_char_whitelist=abcdefghijklmnñopqrstuvwxyzáéíóú 2>/dev/null \
+  -c tessedit_char_whitelist=0123456789abcdefghijklmnñopqrstuvwxyzáéíóú 2>/dev/null \
   | \
-tr -d '\n')
+sed 's/ //g' | tr -d -c '[:alnum:]')
 
 for i in "${PIPESTATUS[@]}"; do
   if [[ $i -ne 0 ]]; then
@@ -75,7 +75,7 @@ done
 HTML=$(curl --request POST \
   -s \
   --url https://sede.mjusticia.gob.es/eConsultas/inicioNacionalidad  \
-  -d "action%3AenviarDatosNacionalidad=Enviar&formuNac.codigoNieCompleto=$nie&formuNac.numOrden=$orden&formuNac.numero=$num&formuNac.yearSolicitud=$year&jCaptchaResponse=$captcha"  \
+  -d "formuNac.codigoNieCompleto=$nie&formuNac.numero=$num&formuNac.yearSolicitud=$year&formuNac.numOrden=$orden&jCaptchaResponse=$captcha&action:enviarDatosNacionalidad=Submit%2BQuery"  \
   --cookie-jar nada.txt \
   --cookie nada.txt)
 
