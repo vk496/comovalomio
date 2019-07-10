@@ -2,7 +2,7 @@
 set -e
 
 
-DEPS=( echo rm curl gm xmllint sed )
+DEPS=( echo rm curl xmllint sed )
 
 for i in "${DEPS[@]}"; do
 	if ! hash $i 2>/dev/null; then
